@@ -1,31 +1,8 @@
+#podman build -t SkRobot -f skrobot.dockerfile .
 FROM --platform=linux/amd64 python:2.7
 
-RUN apt-get update && \
-	apt-get install -y \
-	python-pip \
-	iproute2 \
-	telnet \
-	iputils-ping \
-	wget\
-	curl\
-	build-essential\
-	gcc \
-	cmake \
-	unzip \
-	libenchant1c2a \
-	libavformat-dev \
-	libavcodec-dev \
-	libavfilter-dev \
-	libswscale-dev \
-	libjpeg-dev \
-	libpng-dev \
-	libtiff-dev \
-	zlib1g-dev \
-	libopenexr-dev \
-	libxine2-dev \
-	libeigen3-dev \
-	libtbb-dev && \
-	rm -rf /var/lib/apt/lists/*
+RUN apt update && apt install -y nano
+
 
 RUN pip install numpy paramiko
 
@@ -44,5 +21,28 @@ COPY boost/* ./pynaoqi-python2.7-2.1.4.13-linux64/
 ENV PYTHONPATH=${PYTHONPATH}:/naoqi/pynaoqi-python2.7-2.1.4.13-linux64
 ENV LD_LIBRARY_PATH="/naoqi/pynaoqi-python2.7-2.1.4.13-linux64:$LD_LIBRARY_PATH"
 
-#WORKDIR /app
-#CMD bash
+
+WORKDIR /home
+
+ENV HOME=/home
+
+COPY . $HOME
+
+RUN pip install git+https://gitlab.com/i4c0ni99/PySketch.git
+RUN pip install git+https://gitlab.com/i4c0ni99/pck.git
+
+ENV PCK_ROOT=$HOME
+ENV PCK_HOME=$PCK_ROOT/pck
+ENV PCK_BIN=$PCK_HOME/bin
+ENV PATH=$PATH:$PCK_BIN
+
+
+RUN pck --install-base $HOME
+ 
+EXPOSE 9000
+EXPOSE 9001
+
+WORKDIR /develop
+
+CMD bash
+
